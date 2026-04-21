@@ -16,9 +16,9 @@ onlyBuiltDependencies:
   - rolldown
   - sharp
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-  vite-plus: latest
+  vite: npm:@voidzero-dev/vite-plus-core@0.1.19-alpha.3
+  vitest: npm:@voidzero-dev/vite-plus-test@0.1.19-alpha.3
+  vite-plus: 0.1.19-alpha.3
 overrides:
   rolldown: 1.0.0-rc.9
   vite: 'catalog:'
