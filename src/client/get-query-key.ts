@@ -25,6 +25,7 @@ type GetParams<TProcedureOrRouter extends ProcedureOrRouter> =
     ? [input?: GetQueryProcedureInput<$Def['input']>]
     : [];
 
+/** @internal */
 export function getQueryKeyInternal(path: string, input: unknown): string {
   return input === undefined ? path : `${path}-${hash(input || '')}`;
 }
@@ -48,6 +49,7 @@ export function getQueryKey<TProcedureOrRouter extends ProcedureOrRouter>(
   return getQueryKeyInternal(dotPath, input);
 }
 
+/** @internal */
 export function getMutationKeyInternal(path: string) {
   return getQueryKeyInternal(path, undefined);
 }

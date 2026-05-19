@@ -5,6 +5,7 @@ import type {
   TRPCClientErrorLike,
   TRPCProcedureOptions,
   TRPCRequestOptions,
+  TRPCResolverDef,
 } from '@trpc/client';
 import { createTRPCClientProxy, createTRPCUntypedClient } from '@trpc/client';
 import type { TRPCConnectionState } from '@trpc/client/unstable-internals';
@@ -28,14 +29,7 @@ import type { MaybeRefOrGetter, Ref, ShallowRef, UnwrapRef } from 'vue';
 import { createNuxtProxyDecoration } from './decoration-proxy';
 import type { AsyncDataExecuteOptions, KeysOf, PickFrom } from './nuxt-types';
 
-interface ResolverDef {
-  input: any;
-  output: any;
-  transformer: boolean;
-  errorShape: any;
-}
-
-// Extracted from https://github.com/trpc/trpc/blob/5597551257ad8d83dbca7272cc6659756896bbda/packages/client/src/internals/TRPCUntypedClient.ts#L32
+// Extracted from https://github.com/trpc/trpc/blob/5597551257ad8d83db78h47fyggbh0000gn/T/opencode/packages/client/src/internals/TRPCUntypedClient.ts#L32
 interface TRPCSubscriptionObserver<TValue, TError> {
   onStarted: (opts: { context: OperationContext | undefined }) => void;
   onData: (value: inferAsyncIterableYield<TValue>) => void;
@@ -45,7 +39,7 @@ interface TRPCSubscriptionObserver<TValue, TError> {
   onConnectionStateChange: (state: TRPCConnectionState<TError>) => void;
 }
 
-type SubscriptionResolver<TDef extends ResolverDef> = (
+type SubscriptionResolver<TDef extends TRPCResolverDef> = (
   input: TDef['input'],
   opts?: Partial<TRPCSubscriptionObserver<TDef['output'], TRPCClientError<TDef>>> &
     TRPCProcedureOptions,
@@ -71,7 +65,7 @@ export interface UseSubscriptionReturn<TOutput, TError> {
   reset: () => void;
 }
 
-export interface DecoratedSubscription<TDef extends ResolverDef> {
+export interface DecoratedSubscription<TDef extends TRPCResolverDef> {
   /**
    * @example
    *
@@ -93,7 +87,7 @@ export interface DecoratedSubscription<TDef extends ResolverDef> {
 
 export type DecorateProcedure<
   TType extends TRPCProcedureType,
-  TDef extends ResolverDef,
+  TDef extends TRPCResolverDef,
 > = TType extends 'query'
   ? DecoratedQuery<TDef>
   : TType extends 'mutation'
@@ -120,12 +114,12 @@ export type DecorateRouterRecord<TRoot extends AnyTRPCRootTypes, TRecord extends
     : never;
 };
 
-type Resolver<TDef extends ResolverDef> = (
+type Resolver<TDef extends TRPCResolverDef> = (
   input: TDef['input'],
   opts?: TRPCProcedureOptions,
 ) => Promise<TDef['output']>;
 
-export interface DecoratedQuery<TDef extends ResolverDef> {
+export interface DecoratedQuery<TDef extends TRPCResolverDef> {
   /**
    * @example
    *
@@ -152,7 +146,7 @@ export interface DecoratedQuery<TDef extends ResolverDef> {
   query: Resolver<TDef>;
 }
 
-export interface DecoratedMutation<TDef extends ResolverDef> {
+export interface DecoratedMutation<TDef extends TRPCResolverDef> {
   /**
    * @example
    *

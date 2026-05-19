@@ -1,6 +1,8 @@
-import type { TRPCClient } from '@trpc/client';
+import type { TRPCClient, TRPCRequestOptions } from '@trpc/client';
+import type { TRPCConnectionState } from '@trpc/client/unstable-internals';
 import type { AnyTRPCRouter } from '@trpc/server';
 import { createTRPCRecursiveProxy } from '@trpc/server';
+import type { AsyncDataOptions } from 'nuxt/app';
 import { useAsyncData } from 'nuxt/app';
 import { getCurrentInstance, isRef, onScopeDispose, shallowRef, toRaw, toValue, watch } from 'vue';
 
@@ -11,7 +13,7 @@ function isRefOrGetter<T>(val: T): boolean {
   return isRef(val) || typeof val === 'function';
 }
 
-function createAbortController(trpc: any) {
+function createAbortController(trpc?: TRPCRequestOptions & { abortOnUnmount?: boolean }) {
   let controller: AbortController | undefined;
 
   if (trpc?.abortOnUnmount) {
@@ -27,15 +29,31 @@ function createAbortController(trpc: any) {
   return controller;
 }
 
-function handleUseQuery(client: any, path: string, input: any, options: any) {
-  const { trpc, queryKey: customQueryKey, ...asyncDataOptions } = options || ({} as any);
+function handleUseQuery(
+  client: any,
+  path: string,
+  input: any,
+  options?: {
+    queryKey?: string;
+    watch?: AsyncDataOptions<any, any, any>['watch'] | false;
+    trpc?: TRPCRequestOptions & { abortOnUnmount?: boolean };
+    transform?: AsyncDataOptions<any, any, any>['transform'];
+    default?: () => undefined;
+  },
+) {
+  const {
+    trpc,
+    queryKey: customQueryKey,
+    transform,
+    default: defaultFn,
+    watch: optsWatch,
+    ...asyncDataOptions
+  } = options || {};
 
   const controller = createAbortController(trpc);
 
   const queryKey = customQueryKey || getQueryKeyInternal(path, toValue(input));
-  const watch = isRefOrGetter(input)
-    ? [...(asyncDataOptions.watch || []), input]
-    : asyncDataOptions.watch;
+  const watchSources = isRefOrGetter(input) ? [...(optsWatch || []), input] : optsWatch;
 
   return useAsyncData(
     queryKey,
@@ -46,13 +64,30 @@ function handleUseQuery(client: any, path: string, input: any, options: any) {
       }),
     {
       ...asyncDataOptions,
-      watch,
+      watch: watchSources as any,
+      transform,
+      default: defaultFn,
     },
   );
 }
 
-function handleUseMutation(client: any, path: string, options: any) {
-  const { trpc, mutationKey: customMutationKey, ...asyncDataOptions } = options || ({} as any);
+function handleUseMutation(
+  client: any,
+  path: string,
+  options?: {
+    mutationKey?: string;
+    trpc?: TRPCRequestOptions & { abortOnUnmount?: boolean };
+    transform?: AsyncDataOptions<any, any, any>['transform'];
+    default?: () => undefined;
+  },
+) {
+  const {
+    trpc,
+    mutationKey: customMutationKey,
+    transform,
+    default: defaultFn,
+    ...asyncDataOptions
+  } = options || {};
 
   const input = shallowRef(null);
 
@@ -71,6 +106,8 @@ function handleUseMutation(client: any, path: string, options: any) {
       lazy: false,
       server: false,
       immediate: false,
+      transform,
+      default: defaultFn,
     },
   );
 
@@ -80,7 +117,14 @@ function handleUseMutation(client: any, path: string, options: any) {
     return toRaw(asyncData.data.value);
   }
 
-  Object.assign(asyncData, { mutate });
+  function clear() {
+    input.value = null;
+    asyncData.data.value = undefined;
+    asyncData.error.value = undefined;
+    asyncData.status.value = 'idle';
+  }
+
+  Object.assign(asyncData, { mutate, clear });
 
   return asyncData;
 }
@@ -108,13 +152,13 @@ function handleUseSubscription(client: any, path: string, input: any, options: a
 
     status.value = 'connecting';
     error.value = null;
-    onConnectionStateChange?.('connecting');
+    onConnectionStateChange?.({ type: 'state', state: 'connecting', error: null });
 
     const sub = client[path].subscribe(toValue(input), {
       onStarted: (opts: any) => {
         status.value = 'pending';
         onStarted?.(opts);
-        onConnectionStateChange?.('connected');
+        onConnectionStateChange?.({ type: 'state', state: 'pending', error: null });
       },
       onData: (value: any) => {
         // The SSE link wraps data in { data: <actual> }, so extract it
@@ -126,24 +170,24 @@ function handleUseSubscription(client: any, path: string, input: any, options: a
         status.value = 'error';
         error.value = err;
         onError?.(err);
-        onConnectionStateChange?.('error');
+        onConnectionStateChange?.({ type: 'state', state: 'connecting', error: err });
       },
       onComplete: () => {
         status.value = 'idle';
         onComplete?.();
-        onConnectionStateChange?.('idle');
+        onConnectionStateChange?.({ type: 'state', state: 'idle', error: null });
       },
-      onConnectionStateChange: (state: any) => {
+      onConnectionStateChange: (state: TRPCConnectionState<any>) => {
         // Pass through connection state changes from tRPC client (e.g., 'reconnecting')
         onConnectionStateChange?.(state);
         // Update our internal status if needed
-        if (state === 'connected' && status.value !== 'pending') {
+        if (state.state === 'pending' && status.value !== 'pending') {
           status.value = 'pending';
-        } else if (state === 'error' && status.value !== 'error') {
+        } else if (state.error && status.value !== 'error') {
           status.value = 'error';
-        } else if (state === 'idle' && status.value !== 'idle') {
+        } else if (state.state === 'idle' && status.value !== 'idle') {
           status.value = 'idle';
-        } else if (state === 'connecting' && status.value !== 'connecting') {
+        } else if (state.state === 'connecting' && status.value !== 'connecting') {
           status.value = 'connecting';
         }
       },
@@ -164,7 +208,7 @@ function handleUseSubscription(client: any, path: string, input: any, options: a
     status.value = 'idle';
     data.value = undefined;
     error.value = null;
-    onConnectionStateChange?.('idle');
+    onConnectionStateChange?.({ type: 'state', state: 'idle', error: null });
 
     if (toValue(enabled) !== false) {
       subscribe();
@@ -184,12 +228,12 @@ function handleUseSubscription(client: any, path: string, input: any, options: a
         if (isEnabled === false) {
           unsubscribe?.();
           status.value = 'idle';
-          onConnectionStateChange?.('idle');
+          onConnectionStateChange?.({ type: 'state', state: 'idle', error: null });
         } else {
           subscribe();
         }
       },
-      { immediate: false, deep: true },
+      { immediate: false },
     );
   }
 
@@ -215,11 +259,11 @@ export function createNuxtProxyDecoration<TRouter extends AnyTRPCRouter>(
     }
 
     if (lastArg === 'useQuery') {
-      return handleUseQuery(client, path, input, otherOptions);
+      return handleUseQuery(client, path, input, otherOptions as any);
     }
 
     if (lastArg === 'useMutation') {
-      return handleUseMutation(client, path, otherOptions);
+      return handleUseMutation(client, path, otherOptions as any);
     }
 
     if (lastArg === 'useSubscription') {
