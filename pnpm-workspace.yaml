@@ -16,9 +16,9 @@ onlyBuiltDependencies:
   - rolldown
   - sharp
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-  vite-plus: latest
+  vite: https://pkg.pr.new/voidzero-dev/vite-plus/@voidzero-dev/vite-plus-core@1633
+  vitest: https://pkg.pr.new/voidzero-dev/vite-plus/@voidzero-dev/vite-plus-test@1633
+  vite-plus: https://pkg.pr.new/voidzero-dev/vite-plus@1633
 overrides:
   rolldown: 1.0.1
   vite: 'catalog:'
@@ -30,3 +30,7 @@ peerDependencyRules:
   allowedVersions:
     vite: '*'
     vitest: '*'
+minimumReleaseAge: 4320
+minimumReleaseAgeExclude:
+  - vite-plus
+  - '@voidzero-dev/*'
