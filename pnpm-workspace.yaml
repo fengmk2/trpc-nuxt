@@ -4,7 +4,6 @@ packages:
 catalogs:
   repo:
     nuxt: 4.4.5
-    rolldown: 1.0.1
     superjson: ^2.2.6
     zod: ^3.25.76
   trpc:
@@ -13,14 +12,12 @@ catalogs:
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
-  - rolldown
   - sharp
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@latest
   vitest: npm:@voidzero-dev/vite-plus-test@latest
   vite-plus: latest
 overrides:
-  rolldown: 1.0.1
   vite: 'catalog:'
   vitest: 'catalog:'
 peerDependencyRules:
