@@ -1,11 +1,11 @@
+import { useRequestHeaders } from '#imports';
 import type {
   HTTPBatchLinkOptions as _HTTPBatchLinkOptions,
   HTTPLinkOptions as _HTTPLinkOptions,
 } from '@trpc/client';
 import { httpBatchLink as _httpBatchLink, httpLink as _httpLink } from '@trpc/client';
 import type { AnyTRPCRouter } from '@trpc/server';
-import { useRequestHeaders } from 'nuxt/app';
-import type { FetchError, FetchOptions } from 'ofetch';
+import type { FetchError, FetchOptions, FetchResponse } from 'ofetch';
 
 import { defaultEndpoint } from '../shared';
 
@@ -18,21 +18,25 @@ type FetchEsque = (
   init?: RequestInit | Request,
 ) => Promise<Response>;
 
+type NuxtFetch = typeof import('ofetch').$fetch;
+
 function createCustomFetch(fetchOptions?: FetchOptions) {
+  const $fetch = (globalThis as typeof globalThis & { $fetch: NuxtFetch }).$fetch;
+
   return async function customFetch(
     input: RequestInfo | URL,
     init?: RequestInit & { method: 'GET' },
   ) {
-    return globalThis.$fetch
+    return $fetch
       .create(fetchOptions ?? {})
       .raw(input.toString(), init)
-      .catch((e) => {
+      .catch((e: unknown) => {
         if (isFetchError(e) && e.response) {
-          return e.response;
+          return e.response as FetchResponse<unknown>;
         }
         throw e;
       })
-      .then((response) => ({
+      .then((response: FetchResponse<unknown>) => ({
         ...response,
         headers: response.headers,
         json: () => Promise.resolve(response._data),
