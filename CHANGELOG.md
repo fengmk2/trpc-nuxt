@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0
+
+### Minor Changes
+
+- b68d732: Align Nuxt integration with module-builder conventions by using `#imports` and move `h3` to dev deps.
+
 ## 2.0.2
 
 ### Patch Changes
