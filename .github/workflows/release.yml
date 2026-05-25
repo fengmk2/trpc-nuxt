@@ -33,8 +33,14 @@ jobs:
           cache: true
           run-install: true
 
-      - name: Upgrade npm
-        run: npm install -g npm@latest
+      - name: Authenticate with npm via OIDC
+        run: |
+          TOKEN=$(curl -s \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://registry.npmjs.org" \
+            | jq -r '.value')
+          echo "::add-mask::$TOKEN"
+          npm config set "//registry.npmjs.org/:_authToken" "$TOKEN"
 
       - name: Create release PR or publish to npm
         id: changesets
