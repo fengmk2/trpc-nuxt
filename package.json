@@ -23,6 +23,9 @@
       "import": "./dist/server/index.mjs"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vp pack --watch",
     "dev:prepare": "pnpm build && nuxt prepare playground",
