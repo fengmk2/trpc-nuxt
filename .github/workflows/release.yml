@@ -26,9 +26,10 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version: '24'
+          node-version: 'lts'
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
+          run-install: true
 
       - name: Create release PR or publish to npm
         id: changesets
