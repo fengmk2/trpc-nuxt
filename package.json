@@ -29,7 +29,7 @@
   "scripts": {
     "dev": "vp pack --watch",
     "dev:prepare": "pnpm build && nuxt prepare playground",
-    "prepublishOnly": "pnpm build",
+    "prepublishOnly": "vp run build",
     "build": "vp pack",
     "format": "vp fmt",
     "lint": "vp lint",
