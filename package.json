@@ -29,12 +29,12 @@
   "scripts": {
     "dev": "vp pack --watch",
     "dev:prepare": "pnpm build && nuxt prepare playground",
-    "prepublishOnly": "vp run build",
+    "prepublishOnly": "pnpm build",
     "build": "vp pack",
     "format": "vp fmt",
     "lint": "vp lint",
     "lint:fix": "vp lint --fix",
-    "release": "changeset publish",
+    "release": "vp exec changeset publish",
     "prepare": "vp config"
   },
   "dependencies": {

@@ -26,8 +26,7 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
-          node-version: 'lts'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: '24'
           package-manager-cache: false
           run-install: true
 
@@ -35,6 +34,6 @@ jobs:
         id: changesets
         uses: changesets/action@63a615b9cd06ba9a3e6d13796c7fbcb080a60a0b # v1
         with:
-          publish: npm run release
+          publish: vp run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
