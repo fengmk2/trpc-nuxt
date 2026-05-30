@@ -6,7 +6,7 @@ import { appRouter } from '../../trpc/routers';
 export default createTRPCNuxtHandler({
   router: appRouter,
   /**
-   * @link https://trpc.io/docs/context
+   * @see https://trpc.io/docs/context
    */
   createContext,
   onError({ error }) {
@@ -16,7 +16,7 @@ export default createTRPCNuxtHandler({
     }
   },
   /**
-   * @link https://trpc.io/docs/caching#api-response-caching
+   * @see https://trpc.io/docs/caching#api-response-caching
    */
   // responseMeta() {
   //   // ...
