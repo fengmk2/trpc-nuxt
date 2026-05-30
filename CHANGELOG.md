@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.1
+
+### Patch Changes
+
+- e8f9baf: Remove Agents.md added from vp migration
+
 ## 2.1.0
 
 ### Minor Changes
