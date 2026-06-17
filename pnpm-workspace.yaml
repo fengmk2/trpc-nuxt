@@ -14,12 +14,12 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-  vite-plus: latest
+  vite: 'https://pkg.pr.new/voidzero-dev/vite-plus/@voidzero-dev/vite-plus-core@1856'
+  vitest: '4.1.9'
+  vite-plus: 'https://pkg.pr.new/voidzero-dev/vite-plus@1856'
 overrides:
-  vite: 'catalog:'
-  vitest: 'catalog:'
+  vite: 'https://pkg.pr.new/voidzero-dev/vite-plus/@voidzero-dev/vite-plus-core@1856'
+  vitest: '4.1.9'
 peerDependencyRules:
   allowAny:
     - vite
@@ -27,3 +27,16 @@ peerDependencyRules:
   allowedVersions:
     vite: '*'
     vitest: '*'
+minimumReleaseAge: 60
+minimumReleaseAgeExclude:
+  - '@voidzero-dev/*'
+  - vite-plus
+  - '@vitest/*'
+  - vite
+  - vitest
+  - '@oxc-project/*'
+  - '@oxlint/*'
+  - oxlint
+  - oxfmt
+  - oxlint-tsgolint
+blockExoticSubdeps: false
